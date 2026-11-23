@@ -361,4 +361,10 @@ export const api = {
     if (!res.ok) throw new Error("Failed to generate export");
     return res.json();
   },
+  // Phase 11: Observability & Health
+  getMetrics: async () => {
+    const res = await api.fetchWithAuth("/api/v1/metrics");
+    if (!res.ok) throw new Error("Failed to load metrics");
+    return res.json();
+  },
 };
