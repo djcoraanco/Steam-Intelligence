@@ -83,18 +83,21 @@ export default function TrendingPage() {
     setLoading(true);
     try {
       const data = await api.getGames({ limit: 40 });
-      setGames(data);
+      const items = Array.isArray(data) ? data : data?.items || [];
+      setGames(items);
     } catch (err) {
       console.error("Failed to load trending games", err);
+      setGames([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const safeGames = Array.isArray(games) ? games : [];
   // Sort games by CCU or reviews
-  const sortedByCCU = [...games].sort((a, b) => (b.current_players || 0) - (a.current_players || 0));
-  const sortedByReviews = [...games].sort((a, b) => (b.total_reviews || 0) - (a.total_reviews || 0));
-  const breakoutIndies = [...games].filter(g => (g.positive_ratio || 0) >= 85).slice(0, 10);
+  const sortedByCCU = [...safeGames].sort((a, b) => (b.current_players || 0) - (a.current_players || 0));
+  const sortedByReviews = [...safeGames].sort((a, b) => (b.total_reviews || 0) - (a.total_reviews || 0));
+  const breakoutIndies = [...safeGames].filter(g => (g.positive_ratio || 0) >= 85).slice(0, 10);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

@@ -47,15 +47,18 @@ export default function MarketExplorerPage() {
     setLoading(true);
     try {
       const data = await api.getGames({ limit: 50, search: search || undefined });
-      setGames(data);
+      const items = Array.isArray(data) ? data : data?.items || [];
+      setGames(items);
     } catch (err) {
       console.error("Failed to load games for market explorer", err);
+      setGames([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredGames = games.filter((g) => {
+  const safeGames = Array.isArray(games) ? games : [];
+  const filteredGames = safeGames.filter((g) => {
     if (onlyEarlyAccess && !g.is_early_access) return false;
     if (selectedPriceTier === "free" && !g.is_free && (g.price_cents || 0) > 0) return false;
     if (selectedPriceTier === "tier1" && ((g.price_cents || 0) < 99 || (g.price_cents || 0) > 999)) return false;

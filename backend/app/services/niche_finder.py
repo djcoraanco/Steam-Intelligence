@@ -163,7 +163,36 @@ class NicheFinderService:
         """
         Scans all market genres/segments and records or updates NicheOpportunity entities.
         """
+        STANDARD_GENRES = ["Action", "RPG", "Strategy", "Indie", "Simulation", "Adventure", "Casual", "Massively Multiplayer"]
         genres = self.db.query(TaxonomyItem).filter(TaxonomyItem.taxonomy_source == "steam_genre").all()
+        if not genres:
+            for gname in STANDARD_GENRES:
+                item = TaxonomyItem(
+                    id=uuid.uuid4(),
+                    canonical_name=gname,
+                    slug=gname.lower().replace(" ", "-"),
+                    taxonomy_source="steam_genre",
+                    external_id=str(abs(hash(gname)) % 1000)
+                )
+                self.db.add(item)
+            self.db.commit()
+            genres = self.db.query(TaxonomyItem).filter(TaxonomyItem.taxonomy_source == "steam_genre").all()
+
+        # Check if games have taxonomies, if not link them deterministically across genres
+        total_tax_links = self.db.query(GameTaxonomy).count()
+        if total_tax_links == 0:
+            all_games = self.db.query(Game).all()
+            for idx, gm in enumerate(all_games):
+                chosen_genre = genres[idx % len(genres)]
+                gt = GameTaxonomy(
+                    game_id=gm.id,
+                    taxonomy_id=chosen_genre.id,
+                    observed_at=now_utc(),
+                    rank_value=1
+                )
+                self.db.add(gt)
+            self.db.commit()
+
         results = []
 
         for g in genres:

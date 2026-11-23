@@ -29,6 +29,8 @@ def get_dashboard_overview(db: Session = Depends(get_db)):
     data_freshness_status = "unavailable"
     if latest_observation_at:
         now = datetime.now(timezone.utc)
+        if latest_observation_at.tzinfo is None:
+            latest_observation_at = latest_observation_at.replace(tzinfo=timezone.utc)
         diff_hours = (now - latest_observation_at).total_seconds() / 3600.0
         if diff_hours < 2:
             data_freshness_status = "fresh"

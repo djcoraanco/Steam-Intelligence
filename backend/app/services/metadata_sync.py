@@ -282,7 +282,7 @@ class MetadataSyncService:
                 continue
             tax = self.db.query(TaxonomyItem).filter(
                 TaxonomyItem.taxonomy_source == "steam_genre",
-                TaxonomyItem.external_id == g_id
+                (TaxonomyItem.external_id == g_id) | (TaxonomyItem.canonical_name == g_name)
             ).first()
             if not tax:
                 tax = TaxonomyItem(
@@ -294,6 +294,8 @@ class MetadataSyncService:
                 )
                 self.db.add(tax)
                 self.db.flush()
+            else:
+                tax.external_id = g_id
 
             gt_link = self.db.query(GameTaxonomy).filter(
                 GameTaxonomy.game_id == game.id,
