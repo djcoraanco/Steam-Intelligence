@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
@@ -55,3 +56,34 @@ def get_readiness(db: Session = Depends(get_db)):
         return {"ready": True}
     except Exception as exc:
         return {"ready": False, "reason": str(exc)}
+
+
+@router.get("/metrics")
+def get_operational_metrics(db: Session = Depends(get_db)):
+    """
+    Operational observability metrics (Section 16.4):
+    ingestion totals, database entity counts, export volume.
+    """
+    from app.models.catalog import Game
+    from app.models.snapshots import PlayerSnapshot, ReviewSnapshot
+    from app.services.export_service import EXPORTS_DIR
+
+    games_count = db.query(Game).count()
+    player_snapshots_count = db.query(PlayerSnapshot).count()
+    review_snapshots_count = db.query(ReviewSnapshot).count()
+
+    exports_count = 0
+    if os.path.exists(EXPORTS_DIR):
+        exports_count = len(os.listdir(EXPORTS_DIR))
+
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "metrics": {
+            "indexed_games_count": games_count,
+            "player_snapshots_count": player_snapshots_count,
+            "review_snapshots_count": review_snapshots_count,
+            "total_exports_count": exports_count,
+            "exports_storage_directory": EXPORTS_DIR
+        }
+    }

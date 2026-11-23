@@ -11,6 +11,8 @@ from app.api.v1.competitors import router as competitors_router
 from app.api.v1.reviews_mining import router as reviews_mining_router
 from app.api.v1.cross_platform import router as cross_platform_router
 from app.api.v1.seasonality import router as seasonality_router
+from app.api.v1.ai import router as ai_router
+from app.api.v1.reports import router as reports_router
 
 api_v1_router = APIRouter()
 
@@ -26,3 +28,5 @@ api_v1_router.include_router(competitors_router, prefix="", tags=["Competitors"]
 api_v1_router.include_router(reviews_mining_router, prefix="", tags=["Review Mining"])
 api_v1_router.include_router(cross_platform_router, prefix="", tags=["PC Expansion"])
 api_v1_router.include_router(seasonality_router, prefix="", tags=["Seasonality & Calendar"])
+api_v1_router.include_router(ai_router, prefix="", tags=["AI Analyst Layer"])
+api_v1_router.include_router(reports_router, prefix="", tags=["Reports & Exports"])

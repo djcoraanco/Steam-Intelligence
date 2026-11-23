@@ -46,3 +46,9 @@ htmlcov/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Application Generated Files
+exports/
+**/exports/
+backups/
+test_steam_intel.db

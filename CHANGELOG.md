@@ -4,6 +4,38 @@ Todas las modificaciones notables a este proyecto se documentarán en este archi
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el proyecto se adhiere a la Especificación Maestra de Steam Intelligence.
 
+## [1.4.0] - 2026-11-23
+
+### Añadido (Fase 10 — AI Research Layer & Report Exports)
+- Capa de investigación con IA en `backend/app/services/ai_analyst.py`:
+  - Perfiles analíticos con prompts versionados (`market-analyst-v1`, `concept-validator-v1`).
+  - Herramientas tipadas internas (`get_segment_metrics`, `get_niche_opportunities`, `get_review_topics`, `get_release_calendar`) sin permitir SQL dinámico arbitrario.
+  - Generación estructurada JSON conforme a la Sección 12.4 (title, summary, findings con claim, metric, period, evidence_refs, confidence, recommendations, limitations, data_cutoff).
+  - Sanitización de directivas de lenguaje para prevenir inyecciones de prompts en el análisis textual.
+  - Endpoints REST: `POST /api/v1/ai/query`, `POST /api/v1/ai/validate-concept`.
+  - Interfaz de usuario **AI Analyst & Concept Validator** (`/ai`): análisis interactivo de mercado y validador de pitches con tarjetas de hallazgos y evidencias.
+- Motor de exportación multiformato en `backend/app/services/export_service.py`:
+  - **PDF**: Generación de documentos vectoriales reproducibles mediante ReportLab con numeración "Página X de Y", notas de evidencia y disclaimers metodológicos.
+  - **PPTX**: Generación de presentaciones en formato 16:9 widescreen mediante `python-pptx` con tema oscuro profesional grafito/azul/cian, diapositivas ejecutivas y notas al pie.
+  - **XLSX**: Hojas de cálculo multilibro estructuradas mediante `openpyxl` con formato, estilos de cabecera y anchos automáticos.
+  - **CSV / JSON**: Volcados tabulares y estructurados para máxima reproducibilidad.
+  - Endpoints REST: `POST /api/v1/reports/export`, `GET /api/v1/reports/download/{filename}` (con validación de rutas contra directory traversal).
+  - Interfaz de usuario **Reports Center** (`/reports`): selección de formatos, títulos personalizados y descarga directa con 1 clic.
+- Registro de decisión de arquitectura: `docs/adr/ADR-011-motor-de-exportaciones-multiformato-y-ai-analyst.md`.
+
+### Añadido (Fase 11 — Production Hardening & Operational Observability)
+- Scripts de backup automatizado y recuperación:
+  - `scripts/backup.ps1` (PowerShell para entornos Windows / VPS con rotación y retención de 14 días).
+  - `scripts/backup.sh` (Bash para producción en servidores Linux / VPS).
+  - `scripts/restore_test.py` (Script de verificación de restauración de base de datos para garantizar RTO < 4h y RPO < 24h).
+- Observabilidad operativa:
+  - Endpoint `/api/v1/metrics`: telemetría de recuento de juegos indexados, snapshots de concurrencia y reseñas, y volumen de exportaciones.
+  - Endpoints `/api/v1/health` y `/api/v1/ready` para comprobaciones de estado de componentes y contenedores.
+- Hardening de red y seguridad:
+  - Docker networks privadas (`internal` para Postgres, Redis y Celery sin puertos públicos expuestos).
+  - Manejo de middleware con sanitización de secretos en logs, inyección de encabezados de trazabilidad `X-Request-ID` y `X-Response-Time-Ms`.
+- Registro de decisión de arquitectura: `docs/adr/ADR-012-hardening-de-produccion-backups-y-observabilidad.md`.
+
 ## [1.3.0] - 2026-11-23
 
 ### Añadido (Fase 7 — Competitor Analyzer & Review Mining)

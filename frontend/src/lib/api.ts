@@ -334,4 +334,31 @@ export const api = {
     return res.json();
   },
 
+  // Phase 10: AI Research Layer & Report Exports
+  queryAI: async (question: string, targetGenre: string = "Action", targetGameId?: string) => {
+    const res = await api.fetchWithAuth("/api/v1/ai/query", {
+      method: "POST",
+      body: JSON.stringify({ question, target_genre: targetGenre, target_game_id: targetGameId }),
+    });
+    if (!res.ok) throw new Error("Failed to query AI analyst");
+    return res.json();
+  },
+
+  validateConcept: async (conceptDescription: string, genres: string[] = ["Indie"]) => {
+    const res = await api.fetchWithAuth("/api/v1/ai/validate-concept", {
+      method: "POST",
+      body: JSON.stringify({ concept_description: conceptDescription, genres }),
+    });
+    if (!res.ok) throw new Error("Failed to validate game concept");
+    return res.json();
+  },
+
+  exportReport: async (format: string, genre: string = "Action", customTitle?: string) => {
+    const res = await api.fetchWithAuth("/api/v1/reports/export", {
+      method: "POST",
+      body: JSON.stringify({ format, genre, custom_title: customTitle }),
+    });
+    if (!res.ok) throw new Error("Failed to generate export");
+    return res.json();
+  },
 };
