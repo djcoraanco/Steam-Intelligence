@@ -44,6 +44,52 @@ export interface DataSourceItem {
   last_verified_at?: string;
 }
 
+export interface GameSummaryItem {
+  id: string;
+  canonical_name: string;
+  slug?: string;
+  release_date?: string;
+  release_date_precision?: string;
+  release_status: string;
+  game_type: string;
+  is_early_access: boolean;
+  cover_image_url?: string;
+  steam_appid?: string;
+  store_url?: string;
+  current_players?: number;
+  positive_ratio?: number;
+  total_reviews?: number;
+  price_cents?: number;
+  currency: string;
+  is_free: boolean;
+  availability_status: string;
+  last_seen_at?: string;
+}
+
+export interface GameDetailItem extends GameSummaryItem {
+  description?: string;
+  short_description?: string;
+  website_url?: string;
+  regular_price_cents?: number;
+  final_price_cents?: number;
+  discount_percent?: number;
+  price_status: string;
+  developers: string[];
+  publishers: string[];
+  genres: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CatalogStatus {
+  provider_code: string;
+  last_cursor?: string;
+  total_records: number;
+  status: string;
+  last_synced_at?: string;
+  error_message?: string;
+}
+
 export const api = {
   getToken: () => {
     if (typeof window !== "undefined") {
@@ -78,7 +124,6 @@ export const api = {
     });
 
     if (res.status === 401 && typeof window !== "undefined") {
-      // Token invalid or expired
       api.clearToken();
     }
 
@@ -106,6 +151,52 @@ export const api = {
     const res = await api.fetchWithAuth(`/api/v1/sources/${code}/test`, {
       method: "POST",
     });
+    return res.json();
+  },
+
+  getCatalogStatus: async (): Promise<CatalogStatus> => {
+    const res = await api.fetchWithAuth("/api/v1/catalog/status");
+    if (!res.ok) throw new Error("Failed to get catalog status");
+    return res.json();
+  },
+
+  triggerCatalogSync: async (maxResults: number = 1000) => {
+    const res = await api.fetchWithAuth("/api/v1/catalog/sync", {
+      method: "POST",
+      body: JSON.stringify({ max_results: maxResults, resume: true }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Catalog sync failed");
+    }
+    return res.json();
+  },
+
+  getGames: async (params: { limit?: number; offset?: number; search?: string } = {}) => {
+    const query = new URLSearchParams();
+    if (params.limit) query.set("limit", params.limit.toString());
+    if (params.offset) query.set("offset", params.offset.toString());
+    if (params.search) query.set("search", params.search);
+
+    const res = await api.fetchWithAuth(`/api/v1/games?${query.toString()}`);
+    if (!res.ok) throw new Error("Failed to load games list");
+    return res.json();
+  },
+
+  getGameDetail: async (id: string): Promise<GameDetailItem> => {
+    const res = await api.fetchWithAuth(`/api/v1/games/${id}`);
+    if (!res.ok) throw new Error("Failed to load game detail");
+    return res.json();
+  },
+
+  syncGameMetadata: async (id: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/games/${id}/sync-metadata`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Metadata sync failed");
+    }
     return res.json();
   },
 

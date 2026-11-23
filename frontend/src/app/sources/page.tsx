@@ -2,14 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
-import { api, DataSourceItem } from "@/lib/api";
-import { Database, Play, CheckCircle2, XCircle, ExternalLink, ShieldCheck, RefreshCw } from "lucide-react";
+import { api, DataSourceItem, CatalogStatus } from "@/lib/api";
+import {
+  Database,
+  Play,
+  CheckCircle2,
+  XCircle,
+  ExternalLink,
+  RefreshCw,
+  Layers,
+  ArrowRight,
+  Clock,
+  Check
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SourcesPage() {
   const [sources, setSources] = useState<DataSourceItem[]>([]);
+  const [catalogStatus, setCatalogStatus] = useState<CatalogStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [testingCode, setTestingCode] = useState<string | null>(null);
+  const [syncingCatalog, setSyncingCatalog] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, any>>({});
 
   useEffect(() => {
@@ -18,10 +32,10 @@ export default function SourcesPage() {
 
   const loadSources = () => {
     setLoading(true);
-    api
-      .getSources()
-      .then((data) => {
-        setSources(data);
+    Promise.all([api.getSources(), api.getCatalogStatus()])
+      .then(([srcs, catStat]) => {
+        setSources(srcs);
+        setCatalogStatus(catStat);
         setLoading(false);
       })
       .catch((err) => {
@@ -45,17 +59,92 @@ export default function SourcesPage() {
     }
   };
 
+  const handleSyncCatalog = async () => {
+    setSyncingCatalog(true);
+    setSyncResult(null);
+    try {
+      const res = await api.triggerCatalogSync(1000);
+      setSyncResult(`Sincronizados ${res.imported} nuevos juegos. Último AppID: ${res.last_appid}.`);
+      loadSources();
+    } catch (err: any) {
+      setSyncResult(`Fallo en sincronización: ${err.message}`);
+    } finally {
+      setSyncingCatalog(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <Header title="Data Sources · Conectores y Estado de Proveedores" />
 
       <div className="p-6 space-y-6 max-w-7xl mx-auto w-full">
+        {/* Catalog Ingestion Card (Phase 2 & 3) */}
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-sky-950/80 border border-sky-800 text-sky-400 flex items-center justify-center">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-white">Sincronización de Catálogo Steam</h3>
+                <p className="text-xs text-muted-foreground">
+                  Ingesta masiva incremental mediante <span className="font-mono text-gray-300">IStoreService/GetAppList/v1/</span> con cursor y checkpoint.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSyncCatalog}
+              disabled={syncingCatalog}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white text-xs font-medium transition disabled:opacity-50 shrink-0"
+            >
+              <RefreshCw className={cn("w-3.5 h-3.5", syncingCatalog && "animate-spin")} />
+              <span>{syncingCatalog ? "Sincronizando lote..." : "Sincronizar Lote"}</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-900/60 p-3.5 rounded-lg border border-border/80">
+            <div>
+              <span className="text-gray-500 block text-[10px] uppercase font-semibold">Títulos Registrados</span>
+              <span className="text-base font-bold font-mono text-white">
+                {catalogStatus ? catalogStatus.total_records.toLocaleString() : "0"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500 block text-[10px] uppercase font-semibold">Cursor (Last AppID)</span>
+              <span className="text-base font-mono text-cyan-300">
+                {catalogStatus?.last_cursor || "Inicio"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500 block text-[10px] uppercase font-semibold">Estado del Proceso</span>
+              <span className="text-xs uppercase font-semibold text-emerald-400 font-mono">
+                {catalogStatus?.status || "Idle"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500 block text-[10px] uppercase font-semibold">Última Ejecución</span>
+              <span className="text-xs text-gray-300 font-mono">
+                {catalogStatus?.last_synced_at
+                  ? new Date(catalogStatus.last_synced_at).toLocaleTimeString()
+                  : "Nunca"}
+              </span>
+            </div>
+          </div>
+
+          {syncResult && (
+            <div className="text-xs p-2.5 rounded bg-sky-950/60 border border-sky-800 text-sky-200">
+              {syncResult}
+            </div>
+          )}
+        </div>
+
+        {/* Sources Section Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Catálogo de Conectores</h2>
-            <p className="text-xs text-muted-foreground">
-              Supervisión de APIs oficiales y de terceros, políticas de rate limiting y pruebas de contrato.
-            </p>
+            <h2 className="text-sm font-bold text-white tracking-tight uppercase text-gray-400">
+              Inventario de Conectores Registrados
+            </h2>
           </div>
           <button
             onClick={loadSources}

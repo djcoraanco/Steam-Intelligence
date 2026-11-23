@@ -4,6 +4,36 @@ Todas las modificaciones notables a este proyecto se documentarán en este archi
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el proyecto se adhiere a la Especificación Maestra de Steam Intelligence.
 
+## [1.1.0] - 2026-11-23
+
+### Añadido (Fase 2 — Steam Catalog Ingestion & Checkpointing)
+- Servicio de ingestión masiva e incremental de catálogo en `backend/app/services/catalog_sync.py`:
+  - Consumo directo del endpoint oficial `IStoreService/GetAppList/v1/`.
+  - Paginación basada en cursor `last_appid` con soporte para lotes configurables de hasta 50,000 registros.
+  - Almacenamiento y auditoría de payloads originales en `raw_payloads` con hash SHA-256 (`parser_version = "catalog-v1"`).
+  - Deduplicación idempotente de títulos y vinculación en `game_platforms` (clave única `platform_id` + `external_id`).
+  - Distinción entre juegos completos (`game`) y contenidos adicionales (`dlc`).
+  - Persistencia de checkpoints en tabla `ingestion_checkpoints` (migración Alembic `002_ingestion_checkpoints.py`) permitiendo reanudar la ingesta interrumpida sin escaneos duplicados.
+- Endpoints de control de catálogo:
+  - `POST /api/v1/catalog/sync`: Inicia o reanuda la sincronización de lotes del catálogo.
+  - `GET /api/v1/catalog/status`: Consulta el cursor actual, registros totales importados y estado del proceso.
+
+### Añadido (Fase 3 — Metadata and Storefront Normalization)
+- Servicio de normalización de datos de tienda en `backend/app/services/metadata_sync.py`:
+  - Consumo del endpoint Storefront `/api/appdetails?appids={APP_ID}&cc={COUNTRY_CODE}&l={LANGUAGE}`.
+  - Degradación elegante ante fallos (`success=false`, aplicaciones retiradas o bloqueadas regionalmente) registrando estado `unavailable` sin inventar métricas ni asignar precios a cero.
+  - Persistencia de precios en unidades menores (centavos) en `price_snapshots` (`regular_price_minor`, `final_price_minor`, `discount_percent`, `currency`, `country_code`).
+  - Normalización y mapeo de desarrolladores y editores en `organizations`, `game_developers` y `game_publishers`.
+  - Extracción y normalización de taxonomías de tienda en `taxonomy_items` y `game_taxonomies`.
+  - Extracción segura de fechas de lanzamiento (`release_date`, `release_date_precision`, `release_status`) y detección de `is_early_access`.
+  - Versionado estricto del parser (`parser_version = "storefront-v1"`).
+- Integración en tareas asíncronas de Celery (`sync_catalog` y `sync_game_metadata` en `backend/app/workers/tasks.py`).
+- Endpoint enriquecido `GET /api/v1/games/{game_id}` y trigger bajo demanda `POST /api/v1/games/{game_id}/sync-metadata`.
+- Vistas de Frontend:
+  - Nueva pantalla **Game Explorer** (`/games`) con buscador en tiempo real, filtros, tarjetas de catálogo y modal de ficha técnica detallada (precios, desarrolladores, editores, géneros y sincronización manual de metadatos).
+  - Panel ampliado en **Data Sources** (`/sources`) con estado del cursor `last_appid`, total de títulos registrados y botón de sincronización de lotes.
+- 5 nuevas pruebas unitarias y de integración en `backend/tests/test_catalog_and_metadata.py` (total de 15 tests pasando al 100%).
+
 ## [1.0.0] - 2026-11-23
 
 ### Añadido (Fase 0 — Discovery y Validación de Fuentes)

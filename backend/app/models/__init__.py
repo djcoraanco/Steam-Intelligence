@@ -26,6 +26,7 @@ from app.models.research import (
     ResearchResult,
 )
 from app.models.user import User, Role, UserRole, AuditLog
+from app.models.checkpoints import IngestionCheckpoint
 
 __all__ = [
     "Base",
@@ -55,4 +56,5 @@ __all__ = [
     "Role",
     "UserRole",
     "AuditLog",
+    "IngestionCheckpoint",
 ]
