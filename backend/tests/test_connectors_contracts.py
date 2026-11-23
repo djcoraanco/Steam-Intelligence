@@ -94,3 +94,16 @@ def test_steam_reviews_contract():
     assert fixture["reviews"][0]["voted_up"] is True
     assert fixture["reviews"][1]["voted_up"] is False
     assert "cursor" in fixture
+
+
+@pytest.mark.asyncio
+async def test_steamspy_connector_capabilities():
+    from app.connectors.steamspy import SteamSpyConnector
+    connector = SteamSpyConnector()
+    caps = connector.get_capabilities()
+    assert "owner_estimates" in caps
+    assert "top100" in caps
+    assert "tag_discovery" in caps
+    assert connector.provider_code == "steamspy"
+    assert "steamspy.com" in connector.base_url
+
