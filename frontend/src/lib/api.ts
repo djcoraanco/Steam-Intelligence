@@ -258,4 +258,80 @@ export const api = {
     if (!res.ok) throw new Error("Failed to load game history");
     return res.json();
   },
+
+  // Phase 7: Competitors & Review Mining
+  getCompetitorSuggestions: async (gameId: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/competitors/suggestions/${gameId}`);
+    if (!res.ok) throw new Error("Failed to load competitor suggestions");
+    return res.json();
+  },
+
+  getLinkedCompetitors: async (gameId: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/competitors/${gameId}`);
+    if (!res.ok) throw new Error("Failed to load linked competitors");
+    return res.json();
+  },
+
+  compareGames: async (gameIdA: string, gameIdB: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/competitors/compare/${gameIdA}/${gameIdB}`);
+    if (!res.ok) throw new Error("Failed to compare games");
+    return res.json();
+  },
+
+  getReviewsMining: async (gameId: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/reviews-mining/${gameId}`);
+    if (!res.ok) throw new Error("Failed to mine reviews");
+    return res.json();
+  },
+
+  // Phase 8: PC Expansion
+  getStoreRegistry: async () => {
+    const res = await api.fetchWithAuth("/api/v1/cross-platform/stores");
+    if (!res.ok) throw new Error("Failed to load PC stores registry");
+    return res.json();
+  },
+
+  getCrossReferences: async (gameId: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/cross-platform/${gameId}`);
+    if (!res.ok) throw new Error("Failed to load cross-platform references");
+    return res.json();
+  },
+
+  linkCrossPlatform: async (payload: {
+    game_id: string;
+    platform_code: string;
+    external_id: string;
+    external_title: string;
+    store_url?: string;
+    match_confidence?: string;
+  }) => {
+    const res = await api.fetchWithAuth("/api/v1/cross-platform/link", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("Failed to link cross-platform game");
+    return res.json();
+  },
+
+  // Phase 9: Seasonality & Release Calendar
+  getIndustryEvents: async () => {
+    const res = await api.fetchWithAuth("/api/v1/seasonality/events");
+    if (!res.ok) throw new Error("Failed to load industry events");
+    return res.json();
+  },
+
+  getCohorts: async (dimension: string = "release_year") => {
+    const res = await api.fetchWithAuth(`/api/v1/seasonality/cohorts?dimension=${dimension}`);
+    if (!res.ok) throw new Error("Failed to load cohorts analysis");
+    return res.json();
+  },
+
+  analyzeLaunchCollision: async (targetDate: string, daysWindow: number = 14) => {
+    const res = await api.fetchWithAuth(
+      `/api/v1/seasonality/launch-collision?target_date=${targetDate}&days_window=${daysWindow}`
+    );
+    if (!res.ok) throw new Error("Failed to analyze launch collision");
+    return res.json();
+  },
+
 };

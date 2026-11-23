@@ -7,6 +7,10 @@ from app.api.v1.games import router as games_router
 from app.api.v1.catalog import router as catalog_router
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.niches import router as niches_router
+from app.api.v1.competitors import router as competitors_router
+from app.api.v1.reviews_mining import router as reviews_mining_router
+from app.api.v1.cross_platform import router as cross_platform_router
+from app.api.v1.seasonality import router as seasonality_router
 
 api_v1_router = APIRouter()
 
@@ -18,3 +22,7 @@ api_v1_router.include_router(games_router, prefix="/games", tags=["Games"])
 api_v1_router.include_router(catalog_router, prefix="/catalog", tags=["Catalog"])
 api_v1_router.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
 api_v1_router.include_router(niches_router, prefix="/niches", tags=["Niches"])
+api_v1_router.include_router(competitors_router, prefix="", tags=["Competitors"])
+api_v1_router.include_router(reviews_mining_router, prefix="", tags=["Review Mining"])
+api_v1_router.include_router(cross_platform_router, prefix="", tags=["PC Expansion"])
+api_v1_router.include_router(seasonality_router, prefix="", tags=["Seasonality & Calendar"])

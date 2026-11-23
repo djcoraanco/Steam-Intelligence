@@ -60,3 +60,36 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def auth_headers(client, db_session):
+    from app.core.security import create_access_token
+    from app.models.user import User, Role, UserRole
+    import uuid
+
+    # Ensure role exists
+    owner_role = db_session.query(Role).filter(Role.name == "owner").first()
+    if not owner_role:
+        owner_role = Role(id=uuid.uuid4(), name="owner", description="Owner role")
+        db_session.add(owner_role)
+        db_session.commit()
+
+    test_user = db_session.query(User).filter(User.email == "test_authed@steamintel.internal").first()
+    if not test_user:
+        test_user = User(
+            id=uuid.uuid4(),
+            email="test_authed@steamintel.internal",
+            password_hash="hashed_placeholder",
+            display_name="Test Authed User",
+            is_active=True
+        )
+        db_session.add(test_user)
+        db_session.commit()
+
+        ur = UserRole(user_id=test_user.id, role_id=owner_role.id)
+        db_session.add(ur)
+        db_session.commit()
+
+    token = create_access_token(subject=str(test_user.id), roles=["owner"])
+    return {"Authorization": f"Bearer {token}"}

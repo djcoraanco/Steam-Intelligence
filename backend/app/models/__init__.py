@@ -27,6 +27,9 @@ from app.models.research import (
 )
 from app.models.user import User, Role, UserRole, AuditLog
 from app.models.checkpoints import IngestionCheckpoint
+from app.models.competitors import GameCompetitor, ReviewTopicExtraction
+from app.models.cross_references import GameCrossReference
+from app.models.events import IndustryEvent
 
 __all__ = [
     "Base",
@@ -57,4 +60,8 @@ __all__ = [
     "UserRole",
     "AuditLog",
     "IngestionCheckpoint",
+    "GameCompetitor",
+    "ReviewTopicExtraction",
+    "GameCrossReference",
+    "IndustryEvent",
 ]

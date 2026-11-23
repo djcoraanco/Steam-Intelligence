@@ -4,7 +4,44 @@ Todas las modificaciones notables a este proyecto se documentarán en este archi
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el proyecto se adhiere a la Especificación Maestra de Steam Intelligence.
 
-## [1.2.0] - 2026-11-23
+## [1.3.0] - 2026-11-23
+
+### Añadido (Fase 7 — Competitor Analyzer & Review Mining)
+- Servicio de análisis de competidores en `backend/app/services/competitor_analyzer.py`:
+  - Algoritmo de sugerencia de competidores basado en similitud de Jaccard sobre taxonomías de tags y géneros, proximidad de fecha de lanzamiento y bandas de precio.
+  - Registro explícito de razones de competitividad (`tag_overlap`, `genre_overlap`, `mechanic_overlap`, `audience_overlap`, `manual_selection`, `early_access_cohort`).
+  - Matriz de comparación directa Head-to-Head (`compare_head_to_head`): precios en USD, CCU observado y picos, reseñas totales, ratios positivos, tags compartidos y diferenciales.
+  - Endpoints REST: `GET /api/v1/competitors/suggestions/{game_id}`, `POST /api/v1/competitors/link`, `GET /api/v1/competitors/{game_id}`, `GET /api/v1/competitors/compare/{game_id_a}/{game_id_b}`.
+  - Interfaz de usuario **Competitor Analyzer** (`/competitors`): comparador interactivo, matriz visual de solapamiento y lista de sugerencias con vinculación en 1 clic.
+- Servicio de minería de reseñas en `backend/app/services/review_mining.py`:
+  - Pipeline de clasificación estructurado sobre 15 tópicos canónicos (Master Spec Sección 9.3).
+  - Sanitización de texto para neutralizar directivas maliciosas de lenguaje e inyecciones de instrucciones (*prompt injection*).
+  - Cálculo estricto de prevalencia con denominador real de la muestra observada ($N$), sin generalizaciones sin respaldo muestral.
+  - Cita exacta de IDs de reseña de origen (`source_review_id`) y fragmentos de evidencia.
+  - Endpoint REST: `GET /api/v1/reviews-mining/{game_id}`.
+  - Interfaz de usuario **Review Mining** (`/reviews-mining`): tarjetas por tópico, barras de proporción de elogios vs quejas, badge de denominador muestral y citas de evidencia.
+- Registro de decisión de arquitectura: `docs/adr/ADR-008-competitor-similarity-y-review-mining.md`.
+
+### Añadido (Fase 8 — PC Expansion)
+- Conectores y registro de capacidades multi-tienda de PC en `backend/app/services/pc_expansion.py`:
+  - `IGDBConnector`: Manejo de autenticación OAuth Client Credentials en Twitch Developer Console, ingestión de metadatos editoriales y cumplimiento estricto del aviso de atribución requerido ("Data provided by IGDB").
+  - `ItchConnector`: Ingestión de feeds RSS públicos de descubrimiento (`/feed/new.xml`, `/feed/featured.xml`, `/feed/sales.xml`) distinguiendo datos públicos de datos privados de creadores con autorización OAuth.
+  - Conectores `GOGConnector` y `EpicGamesConnector`: Operan en modo `metadata_only` o `unsupported` sin emulación de launcher ni scraping anti-bot, evitando falsas métricas en cero.
+  - Servicio de mapeo de identidad `CrossPlatformService` (`game_cross_references`): vinculación multiplataforma con niveles de confianza (`verified`, `high_confidence`, `candidate`, `manual`) y métodos documentados, impidiendo fusiones erróneas de juegos por coincidencia débil de nombre.
+  - Endpoints REST: `GET /api/v1/cross-platform/stores`, `GET /api/v1/cross-platform/{game_id}`, `POST /api/v1/cross-platform/link`.
+  - Interfaz de usuario **PC Expansion** (`/pc-expansion`): catálogo de storefronts soportados, estados de servicio, capacidades autorizadas y banner de atribución de IGDB.
+- Registro de decisión de arquitectura: `docs/adr/ADR-009-pc-expansion-cross-platform-mapping.md`.
+
+### Añadido (Fase 9 — Seasonality & Release Calendar)
+- Motor de inteligencia estacional y calendario en `backend/app/services/seasonality.py`:
+  - Catálogo de eventos de la industria (`industry_events`): Steam Seasonal Sales (Spring, Summer, Autumn, Scream Fest, Winter), Steam Next Fest (febrero, junio, octubre) con fuentes oficiales documentadas.
+  - Analizador de colisiones de lanzamiento (`analyze_launch_collision`): detección de conflictos en ventanas temporales configurables ($\pm 14$ días), cálculo de score de colisión (0 a 100), nivel de riesgo (`low`, `moderate`, `high`, `extreme`) y recomendación de ventanas alternativas despejadas.
+  - Análisis por cohortes históricas de lanzamiento (`get_cohort_analysis`): agrupación por año, mes o modalidad Early Access con disclaimer explícito de correlación temporal frente a causalidad.
+  - Endpoints REST: `GET /api/v1/seasonality/events`, `GET /api/v1/seasonality/cohorts`, `GET /api/v1/seasonality/launch-collision`.
+  - Interfaz de usuario **Seasonality & Calendar** (`/seasonality`): simulador interactivo de colisiones por fecha, avisos de eventos en conflicto, ventanas alternativas despejadas y desglose de cohortes.
+- Migración de base de datos Alembic: `backend/alembic/versions/003_phases_7_8_9_schema.py`.
+- Registro de decisión de arquitectura: `docs/adr/ADR-010-seasonality-cohorts-y-collision-detection.md`.
+
 
 ### Añadido (Fase 4 — Player and Review History)
 - Servicio de series temporales de concurrencia y reseñas en `backend/app/services/player_review_sync.py`:
