@@ -1,0 +1,26 @@
+{
+  "response": {
+    "apps": [
+      {
+        "appid": 730,
+        "name": "Counter-Strike 2",
+        "last_modified": 1700000000,
+        "price_change_number": 12345
+      },
+      {
+        "appid": 570,
+        "name": "Dota 2",
+        "last_modified": 1700001000,
+        "price_change_number": 23456
+      },
+      {
+        "appid": 1091500,
+        "name": "Cyberpunk 2077",
+        "last_modified": 1700002000,
+        "price_change_number": 34567
+      }
+    ],
+    "have_more_results": true,
+    "last_appid": 1091500
+  }
+}

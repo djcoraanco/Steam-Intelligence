@@ -1,0 +1,62 @@
+{
+  "success": 1,
+  "query_summary": {
+    "num_reviews": 2,
+    "review_score": 8,
+    "review_score_desc": "Very Positive",
+    "total_positive": 550000,
+    "total_negative": 120000,
+    "total_reviews": 670000
+  },
+  "reviews": [
+    {
+      "recommendationid": "150000001",
+      "author": {
+        "steamid": "76561198000000001",
+        "num_games_owned": 150,
+        "num_reviews": 12,
+        "playtime_forever": 6240,
+        "playtime_last_two_weeks": 120,
+        "playtime_at_review": 4500,
+        "last_played": 1700000000
+      },
+      "language": "english",
+      "review": "Incredible world building and story. Runs smoothly after patches.",
+      "timestamp_created": 1698000000,
+      "timestamp_updated": 1698000000,
+      "voted_up": true,
+      "votes_up": 45,
+      "votes_funny": 2,
+      "weighted_vote_score": "0.85",
+      "comment_count": 0,
+      "steam_purchase": true,
+      "received_for_free": false,
+      "written_during_early_access": false
+    },
+    {
+      "recommendationid": "150000002",
+      "author": {
+        "steamid": "76561198000000002",
+        "num_games_owned": 80,
+        "num_reviews": 5,
+        "playtime_forever": 1200,
+        "playtime_last_two_weeks": 0,
+        "playtime_at_review": 1200,
+        "last_played": 1697000000
+      },
+      "language": "english",
+      "review": "Too demanding on older GPUs, occasionally crashes.",
+      "timestamp_created": 1697000000,
+      "timestamp_updated": 1697000000,
+      "voted_up": false,
+      "votes_up": 12,
+      "votes_funny": 1,
+      "weighted_vote_score": "0.62",
+      "comment_count": 0,
+      "steam_purchase": true,
+      "received_for_free": false,
+      "written_during_early_access": false
+    }
+  ],
+  "cursor": "AoIIPwAAAHK80o4B"
+}

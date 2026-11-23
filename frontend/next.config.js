@@ -1,0 +1,22 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'shared.cloudflare.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.cloudflare.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.igdb.com',
+      }
+    ],
+  },
+};
+
+module.exports = nextConfig;

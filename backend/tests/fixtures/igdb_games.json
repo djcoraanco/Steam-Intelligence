@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1877,
+    "name": "Cyberpunk 2077",
+    "slug": "cyberpunk-2077",
+    "summary": "Cyberpunk 2077 is an open-world, action-adventure RPG story set in Night City...",
+    "first_release_date": 1607558400,
+    "genres": [
+      {"id": 12, "name": "Role-playing (RPG)"},
+      {"id": 5, "name": "Shooter"}
+    ],
+    "themes": [
+      {"id": 1, "name": "Action"},
+      {"id": 18, "name": "Science fiction"}
+    ],
+    "game_modes": [
+      {"id": 1, "name": "Single player"}
+    ],
+    "platforms": [
+      {"id": 6, "name": "PC (Microsoft Windows)"},
+      {"id": 167, "name": "PlayStation 5"},
+      {"id": 169, "name": "Xbox Series X|S"}
+    ]
+  }
+]
