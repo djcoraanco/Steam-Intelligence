@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+venv
+node_modules
+.next
+backups
+exports
+*.sqlite
+*.sqlite3
+*.db
+.pytest_cache
