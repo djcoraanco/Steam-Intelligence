@@ -4,6 +4,33 @@ Todas las modificaciones notables a este proyecto se documentarán en este archi
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/)
 y el proyecto se adhiere a la Especificación Maestra de Steam Intelligence.
 
+## [1.2.0] - 2026-11-23
+
+### Añadido (Fase 4 — Player and Review History)
+- Servicio de series temporales de concurrencia y reseñas en `backend/app/services/player_review_sync.py`:
+  - Captura periódica de jugadores concurrentes (`ISteamUserStats/GetNumberOfCurrentPlayers/v1/`) en `player_snapshots`.
+  - Ingesta de reseñas (`IUserReviewsService/GetAppReviews/v1/`) con cálculo de `positive_ratio` y `review_delta` en `review_snapshots`.
+  - Extracción y retención segura de items de reseña individuales (`review_items`).
+  - Endpoints REST: `POST /games/{id}/snapshot-players`, `POST /games/{id}/sync-reviews`, `GET /games/{id}/history`, `POST /games/{id}/watch`, `DELETE /games/{id}/watch`.
+  - Interfaz de usuario **Player Analytics** (`/players`): línea de tiempo cronológica, seguimiento de picos CCU y disparador de snapshot bajo demanda.
+
+### Añadido (Fase 5 — Market Analytics & Rollups)
+- Motor de analítica determinista en `backend/app/services/analytics_engine.py`:
+  - Cálculo de rollups por juego (`game_metric_rollups`): promedio, máximo, mínimo de CCU, recuento de observaciones, delta de reseñas, días de descuento y cobertura de datos (`calculation_version = "analytics-v1"`).
+  - Cálculo de rollups por segmento de mercado (`market_segment_rollups`): total de títulos, títulos activos, mediana de precio en centavos (evitando distorsión de juegos AAA), ratio de concentración del Top 1 y lanzamientos recientes.
+  - Función determinista de crecimiento con manejo estricto de baselines nulos o en cero (Sección 7.4).
+  - Endpoints REST: `GET /api/v1/analytics/rollups/{gp_id}`, `GET /api/v1/analytics/segments`, `POST /api/v1/analytics/compute-rollups`.
+  - Interfaz de usuario **Genre Analytics** (`/genres`): tabla de métricas por género, juegos activos, medianas de precio y concentración de mercado.
+
+### Añadido (Fase 6 — Niche Finder Algorithm)
+- Algoritmo de detección y puntuación de nichos en `backend/app/services/niche_finder.py`:
+  - Implementación estricta de la fórmula maestra de oportunidad (Sección 8.2):
+    `Opportunity = 0.30*Demand + 0.25*Growth + 0.20*CompetitiveSpace + 0.15*CommercialFeasibility + 0.10*EvidenceQuality`.
+  - Protección contra falsas conclusiones: segmentos sin datos o con muestra insuficiente devuelven `insufficient_data` con limitaciones explícitas sin fabricar scores (Sección 8.3).
+  - Asignación de bandas de confianza (`high`, `medium`, `low`) y versionado de algoritmo (`score_version = "niche-v1"`).
+  - Endpoints REST: `GET /api/v1/niches`, `POST /api/v1/niches/analyze`, `GET /api/v1/niches/{id}`.
+  - Interfaz de usuario **Niche Finder** (`/niches`): ranking visual de oportunidades, desglose con barras de los 5 factores, badges de confianza, advertencias de limitaciones y recálculo instantáneo.
+
 ## [1.1.0] - 2026-11-23
 
 ### Añadido (Fase 2 — Steam Catalog Ingestion & Checkpointing)

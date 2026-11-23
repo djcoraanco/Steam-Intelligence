@@ -5,6 +5,8 @@ from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.sources import router as sources_router
 from app.api.v1.games import router as games_router
 from app.api.v1.catalog import router as catalog_router
+from app.api.v1.analytics import router as analytics_router
+from app.api.v1.niches import router as niches_router
 
 api_v1_router = APIRouter()
 
@@ -14,3 +16,5 @@ api_v1_router.include_router(dashboard_router, prefix="/dashboard", tags=["Dashb
 api_v1_router.include_router(sources_router, prefix="/sources", tags=["Data Sources"])
 api_v1_router.include_router(games_router, prefix="/games", tags=["Games"])
 api_v1_router.include_router(catalog_router, prefix="/catalog", tags=["Catalog"])
+api_v1_router.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
+api_v1_router.include_router(niches_router, prefix="/niches", tags=["Niches"])

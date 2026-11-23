@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
     Column, String, Integer, BigInteger, DateTime, Numeric,
@@ -33,11 +34,9 @@ class GameMetricRollup(Base):
 
 class MarketSegmentRollup(Base):
     __tablename__ = "market_segment_rollups"
-    __table_args__ = (
-        PrimaryKeyConstraint("segment_type", "period_start", "period_type", "calculation_version", name="pk_market_segment_rollups"),
-    )
 
-    segment_type = Column(String(30), nullable=False)  # genre, tag, genre_combo, price_band, release_cohort
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    segment_type = Column(String(30), nullable=False, index=True)  # genre, tag, genre_combo, price_band, release_cohort
     segment_key = Column(UniversalJSON, nullable=False)
     period_start = Column(DateTime(timezone=True), nullable=False, index=True)
     period_type = Column(String(16), nullable=False)

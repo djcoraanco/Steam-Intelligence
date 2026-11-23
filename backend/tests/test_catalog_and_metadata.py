@@ -16,6 +16,11 @@ def load_fixture(filename: str):
         return json.load(f)
 
 
+async def seed_base_catalog(db):
+    cat_service = CatalogSyncService(db=db)
+    await cat_service.sync_batch(raw_payload_override=load_fixture("steam_applist.json"))
+
+
 @pytest.mark.asyncio
 async def test_catalog_sync_batch_and_checkpointing(db_session):
     """Phase 2: Test catalog ingestion, platform linking, raw payload hashing and checkpointing."""
@@ -72,6 +77,8 @@ async def test_catalog_deduplication(db_session):
     fixture = load_fixture("steam_applist.json")
     service = CatalogSyncService(db=db_session)
 
+    # First run
+    await service.sync_batch(raw_payload_override=fixture)
     initial_games_count = db_session.query(Game).count()
     initial_gp_count = db_session.query(GamePlatform).count()
 
@@ -88,6 +95,7 @@ async def test_catalog_deduplication(db_session):
 @pytest.mark.asyncio
 async def test_metadata_sync_success(db_session):
     """Phase 3: Test appdetails ingestion, price in cents, organizations, and taxonomies."""
+    await seed_base_catalog(db_session)
     fixture = load_fixture("steam_appdetails_success.json")
     meta_service = MetadataSyncService(db=db_session)
 
@@ -139,10 +147,10 @@ async def test_metadata_sync_success(db_session):
 @pytest.mark.asyncio
 async def test_metadata_sync_graceful_degradation(db_session):
     """Phase 3: If appdetails returns success=false, do NOT crash, and do NOT invent zero price."""
-    fixture = load_fixture("steam_appdetails_empty.json")
+    await seed_base_catalog(db_session)
     meta_service = MetadataSyncService(db=db_session)
 
-    # Find another game, e.g. CS2
+    # Find CS2
     cs2_gp = (
         db_session.query(GamePlatform)
         .filter(GamePlatform.external_id == "730")
@@ -169,8 +177,21 @@ async def test_metadata_sync_graceful_degradation(db_session):
     assert price_snap.final_price_minor is None  # NOT 0!
 
 
-def test_api_catalog_and_games(client, db_session):
+@pytest.mark.asyncio
+async def test_api_catalog_and_games(client, db_session):
     """Test API endpoints for catalog status and games detail."""
+    await seed_base_catalog(db_session)
+    meta_service = MetadataSyncService(db=db_session)
+    cyberpunk_gp = (
+        db_session.query(GamePlatform)
+        .filter(GamePlatform.external_id == "1091500")
+        .first()
+    )
+    await meta_service.sync_game_details(
+        game_id=cyberpunk_gp.game_id,
+        raw_payload_override=load_fixture("steam_appdetails_success.json")
+    )
+
     # 1. Catalog status
     stat_resp = client.get("/api/v1/catalog/status")
     assert stat_resp.status_code == 200

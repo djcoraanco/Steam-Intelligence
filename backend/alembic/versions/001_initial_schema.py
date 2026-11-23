@@ -233,6 +233,7 @@ def upgrade() -> None:
 
     op.create_table(
         'market_segment_rollups',
+        sa.Column('id', sa.String(36), primary_key=True),
         sa.Column('segment_type', sa.String(30), nullable=False),
         sa.Column('segment_key', sa.JSON(), nullable=False),
         sa.Column('period_start', sa.DateTime(timezone=True), nullable=False, index=True),
@@ -245,8 +246,7 @@ def upgrade() -> None:
         sa.Column('new_release_count', sa.Integer(), nullable=True),
         sa.Column('top_game_concentration', sa.Numeric(5, 4), nullable=True),
         sa.Column('data_coverage', sa.Numeric(5, 2), nullable=True),
-        sa.Column('calculation_version', sa.String(32), nullable=False),
-        sa.PrimaryKeyConstraint('segment_type', 'period_start', 'period_type', 'calculation_version', name='pk_market_segment_rollups')
+        sa.Column('calculation_version', sa.String(32), nullable=False)
     )
 
     # Research & Niches

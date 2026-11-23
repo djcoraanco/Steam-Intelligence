@@ -209,4 +209,53 @@ export const api = {
       return null;
     }
   },
+
+  getNiches: async (params: { confidence?: string; min_score?: number } = {}) => {
+    const query = new URLSearchParams();
+    if (params.confidence) query.set("confidence", params.confidence);
+    if (params.min_score) query.set("min_score", params.min_score.toString());
+
+    const res = await api.fetchWithAuth(`/api/v1/niches?${query.toString()}`);
+    if (!res.ok) throw new Error("Failed to load niches");
+    return res.json();
+  },
+
+  runNicheAnalysis: async () => {
+    const res = await api.fetchWithAuth("/api/v1/niches/analyze", {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error("Failed to run niche analysis");
+    return res.json();
+  },
+
+  getSegmentRollups: async (segmentType: string = "genre") => {
+    const res = await api.fetchWithAuth(`/api/v1/analytics/segments?segment_type=${segmentType}`);
+    if (!res.ok) throw new Error("Failed to load segment rollups");
+    return res.json();
+  },
+
+  computeRollups: async () => {
+    const res = await api.fetchWithAuth("/api/v1/analytics/compute-rollups", {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error("Failed to compute rollups");
+    return res.json();
+  },
+
+  snapshotPlayers: async (gameId: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/games/${gameId}/snapshot-players`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Player snapshot failed");
+    }
+    return res.json();
+  },
+
+  getGameHistory: async (gameId: string) => {
+    const res = await api.fetchWithAuth(`/api/v1/games/${gameId}/history`);
+    if (!res.ok) throw new Error("Failed to load game history");
+    return res.json();
+  },
 };
