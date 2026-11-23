@@ -21,7 +21,7 @@ export default function ReportsPage() {
       setExportHistory((prev) => [res, ...prev]);
 
       // Direct trigger of download
-      const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${res.download_url}`;
+      const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || ""}${res.download_url}`;
       window.open(downloadUrl, "_blank");
     } catch (err: any) {
       setError(err.message || "Error al generar informe");
@@ -197,7 +197,7 @@ export default function ReportsPage() {
                       <td className="py-3 px-3 text-gray-400">{h.generated_at}</td>
                       <td className="py-3 px-3 text-right">
                         <a
-                          href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${h.download_url}`}
+                          href={`${process.env.NEXT_PUBLIC_API_URL || ""}${h.download_url}`}
                           target="_blank"
                           rel="noreferrer"
                           className="px-3 py-1 bg-secondary text-white rounded text-[11px] hover:bg-secondary/80 inline-flex items-center gap-1"

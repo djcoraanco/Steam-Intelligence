@@ -71,8 +71,8 @@ services:
     networks:
       - public_proxy
       - internal
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 15s
@@ -135,8 +135,10 @@ services:
     env_file:
       - .env
     environment:
-      NEXT_PUBLIC_API_URL: http://api:8000
+      INTERNAL_API_URL: http://api:8000
     networks:
       - public_proxy
+    expose:
+      - "3000"
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
